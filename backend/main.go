@@ -1,9 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"aiplatform/routes"
+	"net/http"
 )
 
 func main() {
-	fmt.Println("Hello, world!")
+	r := routes.NewRouter()
+	log.Println("backend running")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

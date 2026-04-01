@@ -1,7 +1,7 @@
 export default function Dashboard() {
   return (
     <div>
-      <h1 className="bg-red-500">Dashboard</h1>
+      <h1 className="bg-red-500">Hello, world!</h1>
     </div>
   );
 }
