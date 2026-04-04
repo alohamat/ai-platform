@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -65,6 +66,15 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
+	if req.Steps == 0 {
+		req.Steps = 4
+	}
+	if req.Width == 0 {
+		req.Width = 1024
+	}
+	if req.Height == 0 {
+		req.Height = 1024
+	}
 
 	body, _ := json.Marshal(req)
 
@@ -75,6 +85,9 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	pythonReq.Header.Set("Content-Type", "application/json")
 	pythonReq.Header.Set("X-Nvidia-Token", nvidiaToken) // pass token to Python via header
+
+	bodyBytes, _ := json.Marshal(req)
+	log.Printf("sending to python: %s", string(bodyBytes))
 
 	resp, err := http.DefaultClient.Do(pythonReq)
 	if err != nil {

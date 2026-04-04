@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthModal } from "../components/AuthModal";
 import { api } from "../services/api";
@@ -6,35 +6,52 @@ import { api } from "../services/api";
 type Size = "1:1" | "16:9" | "9:16";
 
 const sizeMap = {
-  "1:1":  { width: 1024, height: 1024 },
+  "1:1": { width: 1024, height: 1024 },
   "16:9": { width: 1024, height: 576 },
-  "9:16": { width: 576,  height: 1024 },
+  "9:16": { width: 576, height: 1024 },
 };
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
-  const [prompt, setPrompt]     = useState("");
-  const [size, setSize]         = useState<Size>("1:1");
-  const [image, setImage]       = useState<string | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState<string | null>(null);
+  const [prompt, setPrompt] = useState("");
+  const [size, setSize] = useState<Size>("1:1");
+  const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [demoCredits, setDemoCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      api.getDemoCredits().then((data) => setDemoCredits(data.remaining));
+    }
+  }, [loading, user]);
 
   async function handleGenerate() {
     if (!prompt.trim()) return;
-    if (!user) { setShowModal(true); return; }
     setLoading(true);
     setError(null);
+
     try {
       const { width, height } = sizeMap[size];
-      const data = await api.generateImage(prompt, width, height);
-      setImage(data.image_base64);
+
+      if (user) {
+        // user logged in, uses main route with their token
+        const data = await api.generateImage(prompt, width, height);
+        setImage(data.image_base64);
+      } else {
+        // visitor uses demo with shared token
+        const data = await api.generateImageDemo(prompt, width, height);
+        setImage(data.image_base64);
+      }
     } catch (err: any) {
-      setError(
-        err.message.includes("no credits")
-          ? "You used up all your free credits. Please sign up for a subscription to continue generating images."
-          : err.message
-      );
+      if (err.message.includes("demo limit reached")) {
+        setShowModal(true);
+      } else if (err.message.includes("no credits")) {
+        setError("Você usou todos os créditos. Adicione seu token NVIDIA em configurações.");
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -64,20 +81,29 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs text-[#7c5cbf]"
                 style={{ background: "rgba(124,92,191,0.1)", border: "0.5px solid rgba(124,92,191,0.25)" }}>
                 <div className="w-1.5 h-1.5 rounded-full bg-[#7c5cbf]" />
-                {user.free_credits} credit{user.free_credits !== 1 ? "s" : ""} left
+                Logged in!
               </div>
               <button onClick={logout}
-                className="px-3 py-1.5 rounded-lg text-sm text-[#4a4060] transition-colors"
+                className="px-3 py-1.5 rounded-lg text-sm text-[#4a4060] transition-colors hover:cursor-pointer"
                 style={{ background: "rgba(255,255,255,0.5)", border: "0.5px solid rgba(0,0,0,0.1)" }}>
                 sign out
               </button>
             </>
           ) : (
-            <button onClick={() => setShowModal(true)}
-              className="px-3 py-1.5 rounded-lg text-sm text-[#4a4060] transition-colors hover:cursor-pointer"
-              style={{ background: "rgba(255,255,255,0.5)", border: "0.5px solid rgba(0,0,0,0.1)" }}>
-              Sign in
-            </button>
+            <>
+              {demoCredits !== null && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs text-[#7c5cbf]"
+                  style={{ background: "rgba(124,92,191,0.1)", border: "0.5px solid rgba(124,92,191,0.25)" }}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#7c5cbf]" />
+                  {demoCredits} demo credit{demoCredits !== 1 ? "s" : ""} left
+                </div>
+              )}
+              <button onClick={() => setShowModal(true)}
+                className="px-3 py-1.5 rounded-lg text-sm text-[#4a4060] transition-colors hover:cursor-pointer"
+                style={{ background: "rgba(255,255,255,0.5)", border: "0.5px solid rgba(0,0,0,0.1)" }}>
+                Sign in
+              </button>
+            </>
           )}
         </div>
       </nav>
@@ -145,9 +171,9 @@ export default function Dashboard() {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-purple-200"
               style={{ border: "1px dashed rgba(124,92,191,0.2)" }}>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <rect x="2" y="2" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="1"/>
-                <circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" strokeWidth="1"/>
-                <path d="M2 12l4-3 3 2.5 3-4 4 4.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+                <rect x="2" y="2" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="1" />
+                <circle cx="6.5" cy="6.5" r="1.5" stroke="currentColor" strokeWidth="1" />
+                <path d="M2 12l4-3 3 2.5 3-4 4 4.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             your image will appear here

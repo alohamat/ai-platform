@@ -90,7 +90,7 @@ export function AuthModal({ onClose }: { onClose: () => void }) {
         {error && <p className="text-[12px] text-red-600 mb-3">{error}</p>}
 
         <button onClick={handleSubmit} disabled={loading}
-          className="w-full py-3 rounded-xl text-sm font-medium text-white bg-[#2d2640] transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-85">
+          className="w-full py-3 rounded-xl text-sm font-medium text-white bg-[#2d2640] transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-85 hover:cursor-pointer">
           {loading ? "..." : tab === "login" ? "Continue" : "Get started"}
         </button>
       </div>

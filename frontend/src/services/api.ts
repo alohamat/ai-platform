@@ -49,4 +49,19 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ prompt, width: width ?? 1024, height: height ?? 1024 }),
     }),
+
+  getDemoCredits: () =>
+    request<{ remaining: number }>("/ai/demo/credits"),
+
+  generateImageDemo: (prompt: string, width?: number, height?: number) =>
+    request<{ image_base64: string; seed: number }>("/ai/image/demo", {
+      method: "POST",
+      body: JSON.stringify({
+        prompt,
+        width: width ?? 1024,
+        height: height ?? 1024,
+        steps: 4,
+        seed: 0,
+      }),
+    }),
 };
