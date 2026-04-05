@@ -47,8 +47,10 @@ export default function Dashboard() {
     } catch (err: any) {
       if (err.message.includes("demo limit reached")) {
         setShowModal(true);
-      } else if (err.message.includes("no credits")) {
-        setError("Você usou todos os créditos. Adicione seu token NVIDIA em configurações.");
+      } else if (err.message.includes("no credits") || err.message.includes("no token")) {
+        setError("Add your NVIDIA token in settings to keep generating.");
+      } else if (err.message.includes("content filter") || err.message.includes("Prompt blocked")) {
+        setError("Your prompt was blocked by the content filter. Try rephrasing it.");
       } else {
         setError(err.message);
       }
@@ -86,7 +88,7 @@ export default function Dashboard() {
               <button onClick={logout}
                 className="px-3 py-1.5 rounded-lg text-sm text-[#4a4060] transition-colors hover:cursor-pointer"
                 style={{ background: "rgba(255,255,255,0.5)", border: "0.5px solid rgba(0,0,0,0.1)" }}>
-                sign out
+                Sign out
               </button>
             </>
           ) : (

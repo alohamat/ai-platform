@@ -51,7 +51,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	user := models.User{
 		Email:        req.Email,
 		PasswordHash: string(hash),
-		FreeCredits:  3,
 	}
 
 	result, err := col.InsertOne(ctx, user)
@@ -123,7 +122,6 @@ func Me(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"email":        user.Email,
-		"free_credits": user.FreeCredits,
 		"has_token":    user.NvidiaTokenEnc != "", // wont expose if token is set, just if it exists or not
 	})
 }

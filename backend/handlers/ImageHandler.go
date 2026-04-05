@@ -39,26 +39,22 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-	if err := col.FindOne(ctx, bson.M{"_id": objID}).Decode(&user); err != nil {
-		http.Error(w, "user not found", http.StatusUnauthorized)
-		return
-	}
+if err := col.FindOne(ctx, bson.M{"_id": objID}).Decode(&user); err != nil {
+    http.Error(w, "user not found", http.StatusUnauthorized)
+    return
+}
 
-	// decide qual token usar
-	var nvidiaToken string
-	if user.FreeCredits > 0 {
-		nvidiaToken = os.Getenv("NVIDIA_TOKEN")
-	} else if user.NvidiaTokenEnc != "" {
-		nvidiaToken = user.NvidiaTokenEnc // need to crypt/decrypt in production
-	} else {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusPaymentRequired)
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "no credits left",
-			"hint":  "add your NVIDIA token in settings",
-		})
-		return
-	}
+if user.NvidiaTokenEnc == "" {
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusPaymentRequired)
+    json.NewEncoder(w).Encode(map[string]string{
+        "error": "no token configured",
+        "hint":  "add your NVIDIA token in settings",
+    })
+    return
+}
+
+nvidiaToken := user.NvidiaTokenEnc
 
 	// decodes and validates the req body
 	var req ImageRequest
@@ -97,7 +93,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 
 	// only decrement credits if the request was successful and the user had free credits
-	if resp.StatusCode == http.StatusOK && user.FreeCredits > 0 {
+	if resp.StatusCode == http.StatusOK {
 		col.UpdateOne(
 			ctx,
 			bson.M{"_id": objID},
