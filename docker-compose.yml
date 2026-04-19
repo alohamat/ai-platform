@@ -5,12 +5,12 @@ services:
       - "8080:8080"
     depends_on:
       - ai
-      - mongo
     environment:
-      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_URI=${MONGO_URI}
       - MONGO_DB=aiplatform
       - JWT_SECRET=${JWT_SECRET}
       - PYTHON_SERVICE_URL=http://ai:8000
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - IMAGE_API=${IMAGE_API}
 
   ai:
@@ -19,13 +19,6 @@ services:
       - "8000:8000"
     environment:
       - IMAGE_API=${IMAGE_API}
-
-  mongo:
-    image: mongo:7
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
 
   frontend:
     build: ./frontend
@@ -38,6 +31,3 @@ services:
       - backend
     environment:
       - VITE_API_URL=http://localhost:8080
-
-volumes:
-  mongo_data:

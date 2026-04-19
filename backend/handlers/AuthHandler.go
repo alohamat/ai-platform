@@ -10,6 +10,7 @@ import (
 	"aiplatform/db"
 	"aiplatform/models"
 	"aiplatform/middlewares"
+	"aiplatform/utils"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
@@ -137,6 +138,12 @@ func SaveNvidiaToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	encrypted, err := utils.Encrypt(body.Token)
+	if err != nil {
+		http.Error(w, "failed to encrypt token", http.StatusInternalServerError)
+		return
+	}
+
 	col := db.GetCollection("users")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -150,7 +157,7 @@ func SaveNvidiaToken(w http.ResponseWriter, r *http.Request) {
 	_, err = col.UpdateOne(
 		ctx,
 		bson.M{"_id": objID},
-		bson.M{"$set": bson.M{"nvidia_token_enc": body.Token}},
+		bson.M{"$set": bson.M{"nvidia_token_enc": encrypted}},
 	)
 	if err != nil {
 		http.Error(w, "failed to save token", http.StatusInternalServerError)

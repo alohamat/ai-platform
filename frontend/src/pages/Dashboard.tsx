@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthModal } from "../components/AuthModal";
 import { api } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 type Size = "1:1" | "16:9" | "9:16";
 
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [demoCredits, setDemoCredits] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -74,7 +76,7 @@ export default function Dashboard() {
       {/* navbar */}
       <nav className="sticky top-0 z-10 flex items-center justify-between px-7 py-4 border-b border-white/60"
         style={{ background: "rgba(255,255,255,0.45)", backdropFilter: "blur(20px)" }}>
-        <span className="font-serif text-xl text-[#2d2640]">
+        <span className="font-serif text-xl text-[#2d2640] cursor-pointer">
           aether<em className="text-[#7c5cbf]">AI</em>
         </span>
         <div className="flex items-center gap-4">
@@ -89,6 +91,11 @@ export default function Dashboard() {
                 className="px-3 py-1.5 rounded-lg text-sm text-[#4a4060] transition-colors hover:cursor-pointer"
                 style={{ background: "rgba(255,255,255,0.5)", border: "0.5px solid rgba(0,0,0,0.1)" }}>
                 Sign out
+              </button>
+              <button onClick={() => navigate("/settings")}
+                className="px-3 py-1.5 rounded-lg text-sm text-[#4a4060] cursor-pointer"
+                style={{ background: "rgba(255,255,255,0.5)", border: "0.5px solid rgba(0,0,0,0.1)" }}>
+                settings
               </button>
             </>
           ) : (

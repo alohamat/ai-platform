@@ -13,6 +13,7 @@ import (
 	"aiplatform/db"
 	"aiplatform/middlewares"
 	"aiplatform/models"
+	"aiplatform/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -54,7 +55,11 @@ if user.NvidiaTokenEnc == "" {
     return
 }
 
-nvidiaToken := user.NvidiaTokenEnc
+nvidiaToken, err := utils.Decrypt(user.NvidiaTokenEnc)
+if err != nil {
+    http.Error(w, "failed to decrypt token", http.StatusInternalServerError)
+    return
+}
 
 	// decodes and validates the req body
 	var req ImageRequest

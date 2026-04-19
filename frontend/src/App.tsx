@@ -1,9 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PrivateRoute } from "./components/PrivateRoute";
+import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
-
-import Settings from "./pages/Dashboard";
 
 export default function App() {
   return (
@@ -11,6 +10,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<><Dashboard /></>} />
         <Route path="/dashboard" element={<PrivateRoute><Settings /></PrivateRoute>} />
+        <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
       </Routes>
     </AuthProvider>
   );
