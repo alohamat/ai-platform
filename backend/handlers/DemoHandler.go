@@ -22,18 +22,16 @@ import (
 const demoLimit = 3
 
 func getIP(r *http.Request) string {
-	// respects X-Forwarded-For and X-Real-Ip, but falls back to RemoteAddr. Works behind proxies and load balancers. Also removes the port if present.
 	if ip := r.Header.Get("X-Forwarded-For"); ip != "" {
-		return strings.Split(ip, ",")[0]
+		return strings.TrimSpace(strings.Split(ip, ",")[0])
 	}
 	if ip := r.Header.Get("X-Real-Ip"); ip != "" {
-		return ip
+		return strings.TrimSpace(ip)
 	}
-	addr := r.RemoteAddr
-	if parsed, err := netip.ParseAddrPort(addr); err == nil {
+	if parsed, err := netip.ParseAddrPort(r.RemoteAddr); err == nil {
 		return parsed.Addr().String()
 	}
-	return addr
+	return r.RemoteAddr
 }
 
 func DemoCreditsHandler(w http.ResponseWriter, r *http.Request) {
@@ -63,14 +61,13 @@ func DemoCreditsHandler(w http.ResponseWriter, r *http.Request) {
 
 func DemoImageHandler(w http.ResponseWriter, r *http.Request) {
 	ip := getIP(r)
-	// check if the IP has reached the demo limit
+
 	col := db.GetCollection("demo_usage")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	var usage models.DemoUsage
 	err := col.FindOne(ctx, bson.M{"ip": ip}).Decode(&usage)
-
 	if err != nil && err != mongo.ErrNoDocuments {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
@@ -86,18 +83,19 @@ func DemoImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// decodes body and validates
 	var req ImageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
-	if req.Steps == 0 { req.Steps = 4 }
-	if req.Width == 0  { req.Width = 1024 }
-	if req.Height == 0 { req.Height = 1024 }
+	NormalizeImageRequest(&req)
 
-	// calll python
-	body, _ := json.Marshal(req)
+	body, err := json.Marshal(req)
+	if err != nil {
+		http.Error(w, "failed to encode request", http.StatusInternalServerError)
+		return
+	}
+
 	pythonReq, err := http.NewRequest("POST", os.Getenv("PYTHON_SERVICE_URL")+"/generate", bytes.NewBuffer(body))
 	if err != nil {
 		http.Error(w, "failed to build request", http.StatusInternalServerError)
@@ -113,15 +111,14 @@ func DemoImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	// increment if successful after 200 ok
 	if resp.StatusCode == http.StatusOK {
 		col.FindOneAndUpdate(
 			ctx,
 			bson.M{"ip": ip},
 			bson.M{
-				"$inc": bson.M{"count": 1},
-				"$set": bson.M{"updated_at": time.Now()},
-				"$setOnInsert": bson.M{"ip": ip},
+				"$inc":          bson.M{"count": 1},
+				"$set":          bson.M{"updated_at": time.Now()},
+				"$setOnInsert":  bson.M{"ip": ip},
 			},
 			options.FindOneAndUpdate().SetUpsert(true),
 		)

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"aiplatform/db"
-	"aiplatform/models"
 	"aiplatform/middlewares"
+	"aiplatform/models"
 	"aiplatform/utils"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -35,7 +35,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// checks email
 	var existing models.User
 	err := col.FindOne(ctx, bson.M{"email": req.Email}).Decode(&existing)
 	if err != mongo.ErrNoDocuments {
@@ -101,6 +100,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
+
 func Me(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(middlewares.UserIDKey).(string)
 
@@ -122,8 +122,8 @@ func Me(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"email":        user.Email,
-		"has_token":    user.NvidiaTokenEnc != "", // wont expose if token is set, just if it exists or not
+		"email":     user.Email,
+		"has_token": user.NvidiaTokenEnc != "",
 	})
 }
 

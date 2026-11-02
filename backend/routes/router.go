@@ -1,35 +1,35 @@
 package routes
 
 import (
-	"github.com/gorilla/mux"
-	"aiplatform/middlewares"
-	"aiplatform/handlers"
-
 	"net/http"
-)
 
+	"aiplatform/handlers"
+	"aiplatform/middlewares"
+
+	"github.com/gorilla/mux"
+)
 
 func NewRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.Use(middlewares.CorsMiddleware)
-	r.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	r.HandleFunc("/ping", handlers.PingHandler)
-	r.HandleFunc("/auth/register", handlers.Register).Methods("POST")
-	r.HandleFunc("/auth/login", handlers.Login).Methods("POST")
-	r.HandleFunc("/ai/image/demo", handlers.DemoImageHandler).Methods("POST")
-	r.HandleFunc("/ai/demo/credits", handlers.DemoCreditsHandler).Methods("GET")
-	
+	r.HandleFunc("/ping", handlers.PingHandler).Methods(http.MethodGet)
+	r.HandleFunc("/auth/register", handlers.Register).Methods(http.MethodPost)
+	r.HandleFunc("/auth/login", handlers.Login).Methods(http.MethodPost)
+	r.HandleFunc("/ai/image/demo", handlers.DemoImageHandler).Methods(http.MethodPost)
+	r.HandleFunc("/ai/demo/credits", handlers.DemoCreditsHandler).Methods(http.MethodGet)
+
 	protected := r.PathPrefix("/auth").Subrouter()
 	protected.Use(middlewares.AuthMiddleware)
-	protected.HandleFunc("/me", handlers.Me).Methods("GET")
-	protected.HandleFunc("/token", handlers.SaveNvidiaToken).Methods("POST")
+	protected.HandleFunc("/me", handlers.Me).Methods(http.MethodGet)
+	protected.HandleFunc("/token", handlers.SaveNvidiaToken).Methods(http.MethodPost)
 
 	ai := r.PathPrefix("/ai").Subrouter()
 	ai.Use(middlewares.AuthMiddleware)
-	ai.HandleFunc("/image", handlers.ImageHandler).Methods("POST")
+	ai.HandleFunc("/image", handlers.ImageHandler).Methods(http.MethodPost)
 
 	return r
 }

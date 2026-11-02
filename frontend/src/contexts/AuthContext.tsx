@@ -1,26 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../services/api";
-
-interface User {
-  email: string;
-  free_credits: number;
-  has_token: boolean;
-}
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  refreshUser: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
+import { AuthContext, type User } from "./auth-context";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(() => Boolean(localStorage.getItem("token")));
 
   async function refreshUser() {
     try {
@@ -33,11 +17,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      refreshUser().finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    let isMounted = true;
+    api.me()
+      .then((data) => {
+        if (isMounted) setUser(data);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setUser(null);
+          localStorage.removeItem("token");
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   async function login(email: string, password: string) {
@@ -62,10 +62,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
 }

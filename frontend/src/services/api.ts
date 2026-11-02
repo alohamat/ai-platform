@@ -1,15 +1,16 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
-function getToken() {
+function getToken(): string | null {
   return localStorage.getItem("token");
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = getToken();
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   });
@@ -37,30 +38,30 @@ export const api = {
     }),
 
   me: () =>
-    request<{ email: string; free_credits: number; has_token: boolean }>("/auth/me"),
+    request<{ email: string; has_token: boolean }>("/auth/me"),
 
   saveNvidiaToken: (token: string) =>
-    request("/auth/token", {
+    request<{ message: string }>("/auth/token", {
       method: "POST",
       body: JSON.stringify({ token }),
     }),
 
-  generateImage: (prompt: string, width?: number, height?: number) =>
+  generateImage: (prompt: string, width = 1024, height = 1024) =>
     request<{ image_base64: string; seed: number }>("/ai/image", {
       method: "POST",
-      body: JSON.stringify({ prompt, width: width ?? 1024, height: height ?? 1024 }),
+      body: JSON.stringify({ prompt, width, height }),
     }),
 
   getDemoCredits: () =>
     request<{ remaining: number }>("/ai/demo/credits"),
 
-  generateImageDemo: (prompt: string, width?: number, height?: number) =>
+  generateImageDemo: (prompt: string, width = 1024, height = 1024) =>
     request<{ image_base64: string; seed: number }>("/ai/image/demo", {
       method: "POST",
       body: JSON.stringify({
         prompt,
-        width: width ?? 1024,
-        height: height ?? 1024,
+        width,
+        height,
         steps: 4,
         seed: 0,
       }),

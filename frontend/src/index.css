@@ -1,8 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap');
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
 @theme {
   --font-sans: "DM Sans", sans-serif;
   --font-serif: "DM Serif Display", serif;
+  --color-canvas-purple: #7c5cbf;
+  --color-canvas-text: #1e1830;
+  --color-canvas-subtext: #8a7fa0;
+  --color-canvas-placeholder: #b8afd0;
+}
+
+.bg-ambient {
+  background: linear-gradient(135deg, #ede9f6 0%, #e8eaf6 50%, #e9f0f8 100%);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 0.5px solid rgba(255, 255, 255, 0.8);
+}
+
+.glass-modal {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 0.5px solid rgba(255, 255, 255, 0.9);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.6);
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.5);
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.badge-purple {
+  background: rgba(124, 92, 191, 0.1);
+  border: 0.5px solid rgba(124, 92, 191, 0.25);
+  color: #7c5cbf;
 }

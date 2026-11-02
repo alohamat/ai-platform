@@ -48,7 +48,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// injeta o userID no context pra handlers conseguirem pegar
 		ctx := context.WithValue(r.Context(), UserIDKey, userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
