@@ -20,6 +20,7 @@ import (
 
 type ImageRequest struct {
 	Prompt string `json:"prompt"`
+	Image  string `json:"image,omitempty"`
 	Width  int    `json:"width"`
 	Height int    `json:"height"`
 	Steps  int    `json:"steps"`

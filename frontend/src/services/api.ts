@@ -46,10 +46,22 @@ export const api = {
       body: JSON.stringify({ token }),
     }),
 
-  generateImage: (prompt: string, width = 1024, height = 1024) =>
+  generateImage: (prompt: string, width = 1024, height = 1024, steps = 4) =>
     request<{ image_base64: string; seed: number }>("/ai/image", {
       method: "POST",
-      body: JSON.stringify({ prompt, width, height }),
+      body: JSON.stringify({ prompt, width, height, steps }),
+    }),
+
+  editImage: (prompt: string, image: string, width = 1024, height = 1024, steps = 4) =>
+    request<{ image_base64: string; seed: number }>("/ai/image", {
+      method: "POST",
+      body: JSON.stringify({
+        prompt,
+        image,
+        width,
+        height,
+        steps,
+      }),
     }),
 
   getDemoCredits: () =>
