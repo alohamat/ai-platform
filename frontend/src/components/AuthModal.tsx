@@ -50,7 +50,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-md bg-[#ede9f6]/60
+      className={`fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-md bg-[#ede9f6]/60 dark:bg-[#07050d]/80
         ${closing ? "animate-out fade-out duration-150" : "animate-in fade-in duration-150"}`}
       onClick={handleClose}
     >
@@ -61,12 +61,14 @@ export function AuthModal({ onClose }: AuthModalProps) {
             : "animate-in fade-in zoom-in-95 duration-200"}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex gap-0.5 rounded-xl p-1 mb-6 bg-black/5">
+        <div className="flex gap-0.5 rounded-xl p-1 mb-6 bg-black/5 dark:bg-white/5">
           <button
             type="button"
             onClick={() => { setTab("login"); setError(null); }}
             className={`flex-1 py-1.5 rounded-lg text-[13px] font-sans transition-all cursor-pointer ${
-              tab === "login" ? "bg-white text-[#2d2640] shadow-sm font-medium" : "text-[#8a7fa0]"
+              tab === "login"
+                ? "bg-white dark:bg-[#2d2640] text-[#2d2640] dark:text-[#f1eff8] shadow-sm font-medium"
+                : "text-[#8a7fa0] dark:text-[#9d95b5]"
             }`}
           >
             Sign in
@@ -75,23 +77,25 @@ export function AuthModal({ onClose }: AuthModalProps) {
             type="button"
             onClick={() => { setTab("register"); setError(null); }}
             className={`flex-1 py-1.5 rounded-lg text-[13px] font-sans transition-all cursor-pointer ${
-              tab === "register" ? "bg-white text-[#2d2640] shadow-sm font-medium" : "text-[#8a7fa0]"
+              tab === "register"
+                ? "bg-white dark:bg-[#2d2640] text-[#2d2640] dark:text-[#f1eff8] shadow-sm font-medium"
+                : "text-[#8a7fa0] dark:text-[#9d95b5]"
             }`}
           >
             Create account
           </button>
         </div>
 
-        <h2 className="font-serif text-2xl text-[#1e1830] mb-1">
+        <h2 className="font-serif text-2xl text-[#1e1830] dark:text-[#f1eff8] mb-1">
           {tab === "login" ? "Welcome back" : "Get started"}
         </h2>
-        <p className="text-[13px] text-[#8a7fa0] mb-6">
+        <p className="text-[13px] text-[#8a7fa0] dark:text-[#9d95b5] mb-6">
           {tab === "login" ? "Sign in to continue generating" : "Start with 3 free generations"}
         </p>
 
         {tab === "register" && (
           <div className="mb-4">
-            <label className="block text-[11px] uppercase tracking-wide text-[#8a7fa0] mb-1.5 font-medium">
+            <label className="block text-[11px] uppercase tracking-wide text-[#8a7fa0] dark:text-[#9d95b5] mb-1.5 font-medium">
               NVIDIA API Token (optional)
             </label>
             <input
@@ -99,13 +103,13 @@ export function AuthModal({ onClose }: AuthModalProps) {
               placeholder="nvapi-..."
               value={nvidiaToken}
               onChange={(e) => setNvidiaToken(e.target.value)}
-              className="glass-input w-full rounded-xl px-3.5 py-2.5 text-sm text-[#1e1830] outline-none placeholder:text-[#c4b5d8]"
+              className="glass-input w-full rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder:text-[#c4b5d8] dark:placeholder:text-[#6b6385]"
             />
             <a
               href="https://build.nvidia.com"
               target="_blank"
               rel="noreferrer"
-              className="text-[11px] text-[#7c5cbf] hover:underline mt-1.5 inline-block"
+              className="text-[11px] text-[#7c5cbf] dark:text-[#9d7cf0] hover:underline mt-1.5 inline-block"
             >
               Get your token at build.nvidia.com
             </a>
@@ -113,7 +117,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
         )}
 
         <div className="mb-4">
-          <label className="block text-[11px] uppercase tracking-wide text-[#8a7fa0] mb-1.5 font-medium">
+          <label className="block text-[11px] uppercase tracking-wide text-[#8a7fa0] dark:text-[#9d95b5] mb-1.5 font-medium">
             Email
           </label>
           <input
@@ -122,12 +126,12 @@ export function AuthModal({ onClose }: AuthModalProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
-            className="glass-input w-full rounded-xl px-3.5 py-2.5 text-sm text-[#1e1830] outline-none placeholder:text-[#c4b5d8]"
+            className="glass-input w-full rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder:text-[#c4b5d8] dark:placeholder:text-[#6b6385]"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-[11px] uppercase tracking-wide text-[#8a7fa0] mb-1.5 font-medium">
+          <label className="block text-[11px] uppercase tracking-wide text-[#8a7fa0] dark:text-[#9d95b5] mb-1.5 font-medium">
             Password
           </label>
           <input
@@ -136,12 +140,12 @@ export function AuthModal({ onClose }: AuthModalProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
-            className="glass-input w-full rounded-xl px-3.5 py-2.5 text-sm text-[#1e1830] outline-none placeholder:text-[#c4b5d8]"
+            className="glass-input w-full rounded-xl px-3.5 py-2.5 text-sm outline-none placeholder:text-[#c4b5d8] dark:placeholder:text-[#6b6385]"
           />
         </div>
 
         {error && (
-          <p className="text-[12px] text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-3">
+          <p className="text-[12px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 mb-3">
             {error}
           </p>
         )}
@@ -150,7 +154,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
           type="button"
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full py-3 rounded-xl text-sm font-medium text-white bg-[#2d2640] transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 cursor-pointer"
+          className="w-full py-3 rounded-xl text-sm font-medium text-white bg-[#2d2640] dark:bg-[#9d7cf0] dark:text-[#120f1e] dark:hover:bg-[#b096f6] transition-opacity disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 cursor-pointer"
         >
           {loading ? "Please wait..." : tab === "login" ? "Continue" : "Get started"}
         </button>
