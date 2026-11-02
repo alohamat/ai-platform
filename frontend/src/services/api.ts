@@ -38,10 +38,16 @@ export const api = {
     }),
 
   me: () =>
-    request<{ email: string; has_token: boolean }>("/auth/me"),
+    request<{ email: string; has_token: boolean; has_hf_token?: boolean }>("/auth/me"),
 
   saveNvidiaToken: (token: string) =>
     request<{ message: string }>("/auth/token", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    }),
+
+  saveHfToken: (token: string) =>
+    request<{ message: string }>("/auth/hf-token", {
       method: "POST",
       body: JSON.stringify({ token }),
     }),
@@ -52,7 +58,7 @@ export const api = {
       body: JSON.stringify({ prompt, width, height, steps }),
     }),
 
-  editImage: (prompt: string, image: string, width = 1024, height = 1024, steps = 4) =>
+  editImage: (prompt: string, image: string, width = 1024, height = 1024, steps = 20) =>
     request<{ image_base64: string; seed: number }>("/ai/image", {
       method: "POST",
       body: JSON.stringify({
@@ -65,7 +71,7 @@ export const api = {
     }),
 
   getDemoCredits: () =>
-    request<{ remaining: number }>("/ai/demo/credits"),
+    request<{ remaining: number; editRemaining: number }>("/ai/demo/credits"),
 
   generateImageDemo: (prompt: string, width = 1024, height = 1024) =>
     request<{ image_base64: string; seed: number }>("/ai/image/demo", {
@@ -75,6 +81,17 @@ export const api = {
         width,
         height,
         steps: 4,
+        seed: 0,
+      }),
+    }),
+
+  editImageDemo: (prompt: string, image: string, steps = 20) =>
+    request<{ image_base64: string; seed: number }>("/ai/image/demo", {
+      method: "POST",
+      body: JSON.stringify({
+        prompt,
+        image,
+        steps,
         seed: 0,
       }),
     }),

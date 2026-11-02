@@ -122,8 +122,9 @@ func Me(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"email":     user.Email,
-		"has_token": user.NvidiaTokenEnc != "",
+		"email":        user.Email,
+		"has_token":    user.NvidiaTokenEnc != "",
+		"has_hf_token": user.HfTokenEnc != "",
 	})
 }
 
@@ -166,6 +167,47 @@ func SaveNvidiaToken(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "token saved"})
+}
+
+func SaveHfToken(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middlewares.UserIDKey).(string)
+
+	var body struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Token == "" {
+		http.Error(w, "invalid body", http.StatusBadRequest)
+		return
+	}
+
+	encrypted, err := utils.Encrypt(body.Token)
+	if err != nil {
+		http.Error(w, "failed to encrypt token", http.StatusInternalServerError)
+		return
+	}
+
+	col := db.GetCollection("users")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		http.Error(w, "invalid user", http.StatusUnauthorized)
+		return
+	}
+
+	_, err = col.UpdateOne(
+		ctx,
+		bson.M{"_id": objID},
+		bson.M{"$set": bson.M{"hf_token_enc": encrypted}},
+	)
+	if err != nil {
+		http.Error(w, "failed to save token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "hugging face token saved"})
 }
 
 func generateJWT(userID string) (string, error) {

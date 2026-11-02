@@ -12,6 +12,7 @@ services:
       - PYTHON_SERVICE_URL=http://ai:8000
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - IMAGE_API=${IMAGE_API}
+      - HF_TOKEN=${HF_TOKEN}
 
   ai:
     build: ./ai
@@ -21,6 +22,7 @@ services:
       - ./ai:/app
     environment:
       - IMAGE_API=${IMAGE_API}
+      - HF_TOKEN=${HF_TOKEN}
 
   frontend:
     build: ./frontend

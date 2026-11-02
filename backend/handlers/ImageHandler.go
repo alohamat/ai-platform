@@ -21,9 +21,10 @@ import (
 type ImageRequest struct {
 	Prompt string `json:"prompt"`
 	Image  string `json:"image,omitempty"`
-	Width  int    `json:"width"`
-	Height int    `json:"height"`
-	Steps  int    `json:"steps"`
+	Width  int    `json:"width,omitempty"`
+	Height int    `json:"height,omitempty"`
+	Seed   int    `json:"seed,omitempty"`
+	Steps  int    `json:"steps,omitempty"`
 }
 
 func NormalizeImageRequest(req *ImageRequest) {
@@ -57,7 +58,45 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.NvidiaTokenEnc == "" {
+	var req ImageRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+	NormalizeImageRequest(&req)
+
+	isEdit := req.Image != ""
+
+	var nvidiaToken string
+	if user.NvidiaTokenEnc != "" {
+		decrypted, err := utils.Decrypt(user.NvidiaTokenEnc)
+		if err == nil {
+			nvidiaToken = decrypted
+		}
+	}
+
+	var hfToken string
+	if user.HfTokenEnc != "" {
+		decrypted, err := utils.Decrypt(user.HfTokenEnc)
+		if err == nil {
+			hfToken = decrypted
+		}
+	}
+	if hfToken == "" {
+		hfToken = os.Getenv("HF_TOKEN")
+	}
+
+	if isEdit && hfToken == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusPaymentRequired)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "no hugging face token configured",
+			"hint":  "add your Hugging Face token in settings",
+		})
+		return
+	}
+
+	if !isEdit && nvidiaToken == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusPaymentRequired)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -66,19 +105,6 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
-	nvidiaToken, err := utils.Decrypt(user.NvidiaTokenEnc)
-	if err != nil {
-		http.Error(w, "failed to decrypt token", http.StatusInternalServerError)
-		return
-	}
-
-	var req ImageRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
-		return
-	}
-	NormalizeImageRequest(&req)
 
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -92,7 +118,12 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pythonReq.Header.Set("Content-Type", "application/json")
-	pythonReq.Header.Set("X-Nvidia-Token", nvidiaToken)
+	if nvidiaToken != "" {
+		pythonReq.Header.Set("X-Nvidia-Token", nvidiaToken)
+	}
+	if hfToken != "" {
+		pythonReq.Header.Set("X-Hf-Token", hfToken)
+	}
 
 	resp, err := http.DefaultClient.Do(pythonReq)
 	if err != nil {

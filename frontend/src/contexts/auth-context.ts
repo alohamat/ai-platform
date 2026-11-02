@@ -3,6 +3,7 @@ import { createContext } from "react";
 export interface User {
   email: string;
   has_token: boolean;
+  has_hf_token?: boolean;
 }
 
 export interface AuthContextType {

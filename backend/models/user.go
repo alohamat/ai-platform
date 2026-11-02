@@ -7,4 +7,5 @@ type User struct {
 	Email          string             `bson:"email" json:"email"`
 	PasswordHash   string             `bson:"password_hash" json:"-"`
 	NvidiaTokenEnc string             `bson:"nvidia_token_enc,omitempty" json:"-"`
+	HfTokenEnc     string             `bson:"hf_token_enc,omitempty" json:"-"`
 }

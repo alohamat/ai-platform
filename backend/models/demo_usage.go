@@ -9,5 +9,6 @@ type DemoUsage struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	IP        string             `bson:"ip"`
 	Count     int                `bson:"count"`
+	EditCount int                `bson:"edit_count"`
 	UpdatedAt time.Time          `bson:"updated_at"`
 }

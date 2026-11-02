@@ -26,6 +26,7 @@ func NewRouter() *mux.Router {
 	protected.Use(middlewares.AuthMiddleware)
 	protected.HandleFunc("/me", handlers.Me).Methods(http.MethodGet)
 	protected.HandleFunc("/token", handlers.SaveNvidiaToken).Methods(http.MethodPost)
+	protected.HandleFunc("/hf-token", handlers.SaveHfToken).Methods(http.MethodPost)
 
 	ai := r.PathPrefix("/ai").Subrouter()
 	ai.Use(middlewares.AuthMiddleware)

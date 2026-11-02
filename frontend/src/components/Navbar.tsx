@@ -3,15 +3,24 @@ import { useAuth } from "../contexts/useAuth";
 import { ThemeToggle } from "./ThemeToggle";
 
 interface NavbarProps {
-  demoCredits?: number | null;
+  demoCredits?: { remaining: number; editRemaining: number } | number | null;
+  mode?: "generate" | "edit";
   onOpenAuth?: () => void;
 }
 
-export function Navbar({ demoCredits, onOpenAuth }: NavbarProps) {
+export function Navbar({ demoCredits, mode = "generate", onOpenAuth }: NavbarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isSettings = location.pathname === "/settings";
+
+  const count = typeof demoCredits === "number"
+    ? demoCredits
+    : (mode === "edit" ? demoCredits?.editRemaining : demoCredits?.remaining);
+
+  const label = mode === "edit"
+    ? `${count} demo edit${count !== 1 ? "s" : ""} left`
+    : `${count} demo credit${count !== 1 ? "s" : ""} left`;
 
   return (
     <nav className="glass-nav sticky top-0 z-10 flex items-center justify-between px-7 py-4">
@@ -49,10 +58,10 @@ export function Navbar({ demoCredits, onOpenAuth }: NavbarProps) {
           </>
         ) : (
           <>
-            {demoCredits !== null && demoCredits !== undefined && (
+            {count !== null && count !== undefined && (
               <div className="badge-purple flex items-center gap-2 px-3 py-1.5 rounded-full text-xs">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#7c5cbf] dark:bg-[#9d7cf0]" />
-                {demoCredits} demo credit{demoCredits !== 1 ? "s" : ""} left
+                {label}
               </div>
             )}
             <button
